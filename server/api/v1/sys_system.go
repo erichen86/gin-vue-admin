@@ -5,6 +5,8 @@ import (
 	"gin-vue-admin/model"
 	"gin-vue-admin/model/response"
 	"gin-vue-admin/service"
+	"gin-vue-admin/utils"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -42,18 +44,15 @@ func SetSystemConfig(c *gin.Context) {
 	}
 }
 
-// 本方法开发中 开发者windows系统 缺少linux系统所需的包 因此搁置
 // @Tags System
 // @Summary 重启系统
 // @Security ApiKeyAuth
 // @Produce  application/json
-// @Param data body model.System true "重启系统"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"重启系统成功"}"
-// @Router /system/ReloadSystem [post]
+// @Success 200 {string} string "{"code":0,"data":{},"msg":"重启系统成功"}"
+// @Router /system/reloadSystem [post]
 func ReloadSystem(c *gin.Context) {
-	var sys model.System
-	_ = c.ShouldBindJSON(&sys)
-	if err := service.SetSystemConfig(sys); err != nil {
+	err := utils.Reload()
+	if err != nil {
 		global.GVA_LOG.Error("重启系统失败!", zap.Any("err", err))
 		response.FailWithMessage("重启系统失败", c)
 	} else {
@@ -71,9 +70,7 @@ func GetServerInfo(c *gin.Context) {
 	if server, err := service.GetServerInfo(); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
-		return
 	} else {
 		response.OkWithDetailed(gin.H{"server": server}, "获取成功", c)
 	}
-
 }
